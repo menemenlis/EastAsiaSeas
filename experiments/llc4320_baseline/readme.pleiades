@@ -36,4 +36,4 @@
  tail -f STDOUT.0000 | grep advcfl_W
 
 # Comparison results are available in
-# /nobackup/$USER/EastAsiaSeas/experiments/llc4320_baseline/STDOUT.0000
+# /nobackup/$USER/EastAsiaSeas/experiments/llc4320_baseline/results/STDOUT.pleiades
