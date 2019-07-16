@@ -1,23 +1,39 @@
-cd /nobackupp2/dmenemen/llc_4320/regions/SouthChinaSea3
-git clone https://github.com/MITgcm/MITgcm.git
+# Get EastAsiaSeas configuration files from GitHub
+# For instructions below to work, you need to:
+# (1) have a github account
+# (2) have added ssh key to your github account
+#     https://help.github.com/articles/generating-an-ssh-key
+ cd /nobackup/$USER
+ git clone git@github.com:menemenlis/EastAsiaSeas
 
-module purge
-module load comp-intel/2016.2.181 mpi-sgi/mpt.2.14r19 hdf4/4.2.12 hdf5/1.8.18_mpt netcdf/4.4.1.1_mpt
-cd /nobackupp2/dmenemen/llc_4320/regions/SouthChinaSea3/MITgcm
-mkdir build run
+# Get MITgcm from GitHub
+ cd /nobackup/$USER/EastAsiaSeas
+ git clone https://github.com/MITgcm/MITgcm.git
 
-cd /nobackupp2/dmenemen/llc_4320/regions/SouthChinaSea3/MITgcm/build
-../tools/genmake2 -of ../tools/build_options/linux_amd64_ifort+mpi_ice_nas -mpi -mods ../../code 
-make depend
-make -j 16
+# Request interactive nodes
+ qsub -I -q debug -l select=12:ncpus=20:model=ivy,walltime=2:00:00 -m abe
 
-cd /nobackupp2/dmenemen/llc_4320/regions/SouthChinaSea3/MITgcm/run
-cp ../build/mitgcmuv .
-ln -sf /nobackup/dmenemen/forcing/ECMWF_operational/* .
-ln -sf /nobackup/dmenemen/forcing/ncep_rgau/runoff1p2472-360x180x12.bin .
-ln -sf ../../run_template/* .
-cp ../../input/* .
-mpiexec -n 240 ./mitgcmuv
+# Compile MITgcm
+ cd /nobackup/$USER/EastAsiaSeas/MITgcm
+ mkdir build run
+ cd /nobackup/$USER/EastAsiaSeas/MITgcm/build
+ module purge
+ module load comp-intel/2016.2.181 mpi-sgi/mpt.2.14r19 hdf4/4.2.12 hdf5/1.8.18_mpt netcdf/4.4.1.1_mpt
+ ../tools/genmake2 -of ../tools/build_options/linux_amd64_ifort+mpi_ice_nas -mpi -mods ../../experiments/llc4320_baseline/code
+ make depend
+ make -j 16
 
-# runoff is in
-# /nobackup/dcarrol2/LOAC/write_bin/jra55_do/v1.4.0/LLC4320_south_china_sea
+# Run MITgcm
+ cd /nobackup/$USER/EastAsiaSeas/MITgcm/run
+ cp ../../experiments/llc4320_baseline/input/* .
+ ln -sf /nobackup/dmenemen/forcing/ECMWF_operational/* .
+ ln -sf /nobackup/dmenemen/forcing/ncep_rgau/runoff1p2472-360x180x12.bin .
+ ln -sf /nobackupp2/dmenemen/llc_4320/regions/SouthChinaSea3/run_template/* .
+ mpiexec -n 240 ./mitgcmuv
+
+# Monitor cfl condition during run
+ cd /nobackup/$USER/NA/MITgcm/run
+ tail -f STDOUT.0000 | grep advcfl_W
+
+# Comparison results are available in
+# /nobackup/$USER/EastAsiaSeas/experiments/llc4320_baseline/STDOUT.0000
