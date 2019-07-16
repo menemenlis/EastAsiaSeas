@@ -1,0 +1,36 @@
+#!/bin/bash
+#
+# $Header: /u/gcmpack/MITgcm/tools/build_options/linux_ia64_ifort+mpi_swell,v 1.5 2017/06/29 00:26:01 jmc Exp $
+# $Name:  $
+
+# Build options for Harvard cluster "swell"
+
+FC=mpif90
+F90C=mpif90
+CC=mpicc
+LINK='mpif90'
+
+DEFINES='-DWORDLENGTH=4 -DALLOW_USE_MPI'
+CPP='cpp  -traditional -P'
+EXTENDED_SRC_FLAG='-132'
+
+#INCLUDES='-I/usr/include/netcdf'
+INCLUDES='-I/opt/netcdf-3.6.0-p1/include -I/share/intel/impi/4.1.3.049/include'
+LIBS='-L/opt/netcdf-3.6.0-p1/lib -L/share/intel/impi/4.1.3.049/lib64 -lmpi -lpthread'
+
+#  Note that the -mp switch is for ieee "maintain precision" and is
+#  roughly equivalent to -ieee
+if test "x$IEEE" = x ; then
+    FFLAGS="$FFLAGS -fPIC -mcmodel=large -shared-intel -g -convert big_endian -assume byterecl"
+    CFLAGS="$CFLAGS -fPIC -mcmodel=large -shared-intel"
+    FOPTIM='-O3 -align'
+#P3 FOPTIM=$FOPTIM' -tpp6 -xWKM'
+#P4 FOPTIM=$FOPTIM' -tpp7 -xWKM'
+else
+    FOPTIM='-O0 -noalign'
+    FFLAGS="$FFLAGS -W0 -WB -pc64 -convert big_endian -assume byterecl"
+#FFLAGS="$FFLAGS -mp -w95 -W0 -WB"
+fi
+#- might want to use '-r8' for fizhi pkg:
+#FFLAGS="$FFLAGS -r8"
+
