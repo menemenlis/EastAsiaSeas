@@ -1,2 +1,24 @@
 # Instructions for running MITgcm on hpc.xmu.edu.cn
 # First Step
+# for using the ECMWF forcing files, which are very large,
+# set "ulimit -s unlimited" in .bashrc
+
+cd ~/SouthChinaSea3
+git clone https://github.com/MITgcm/MITgcm.git
+
+cd ~/SouthChinaSea3/MITgcm
+mkdir build run
+
+cd ~/SouthChinaSea3/MITgcm/build
+../tools/genmake2 -of ../../code/xmu_hpc_mpi_1 -mpi -mods ../../code 
+make depend
+make -j 16
+
+cd ~/SouthChinaSea3/MITgcm/run
+cp ../build/mitgcmuv .
+ln -sf ~/SouthChinaSea3/ECMWF_operational/* .
+ln -sf ~/SouthChinaSea3/runoff/* .
+ln -sf ../../run_template/* .
+cp ../../input/* .
+
+bsub -n 240 -q ocean_530 -o %J.out mpirun ./mitgcmuv
