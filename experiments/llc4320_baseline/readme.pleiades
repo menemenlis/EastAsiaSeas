@@ -1,0 +1,23 @@
+cd /nobackupp2/dmenemen/llc_4320/regions/SouthChinaSea3
+git clone https://github.com/MITgcm/MITgcm.git
+
+module purge
+module load comp-intel/2016.2.181 mpi-sgi/mpt.2.14r19 hdf4/4.2.12 hdf5/1.8.18_mpt netcdf/4.4.1.1_mpt
+cd /nobackupp2/dmenemen/llc_4320/regions/SouthChinaSea3/MITgcm
+mkdir build run
+
+cd /nobackupp2/dmenemen/llc_4320/regions/SouthChinaSea3/MITgcm/build
+../tools/genmake2 -of ../tools/build_options/linux_amd64_ifort+mpi_ice_nas -mpi -mods ../../code 
+make depend
+make -j 16
+
+cd /nobackupp2/dmenemen/llc_4320/regions/SouthChinaSea3/MITgcm/run
+cp ../build/mitgcmuv .
+ln -sf /nobackup/dmenemen/forcing/ECMWF_operational/* .
+ln -sf /nobackup/dmenemen/forcing/ncep_rgau/runoff1p2472-360x180x12.bin .
+ln -sf ../../run_template/* .
+cp ../../input/* .
+mpiexec -n 240 ./mitgcmuv
+
+# runoff is in
+# /nobackup/dcarrol2/LOAC/write_bin/jra55_do/v1.4.0/LLC4320_south_china_sea
