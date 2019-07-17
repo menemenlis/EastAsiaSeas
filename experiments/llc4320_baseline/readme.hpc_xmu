@@ -4,24 +4,29 @@
 # !!! set "ulimit -s unlimited" in .bashrc
 
 # Get MITgcm from GitHub
+mkdir ~/SouthChinaSea3
 cd ~/SouthChinaSea3
 git clone https://github.com/MITgcm/MITgcm.git
 
-# Download the forcing and boundary data.
-# Download the hpc.xmu build_option file "xmu_hpc_mpi_1"
+mkdir code input
 
-
+#-------------------------------------------------------
+# Download the MITgcm configure files to the folder "~/SouthChinaSea3/code/" and "~/SouthChinaSea3/input/"
+# Download the forcing data to the folder "~/SouthChinaSea3/ECMWF_operational/"
+# Download the initial and boundary data to the folder "~/SouthChinaSea3/run_template/"
+# Download the river runoff data to the folder "~/SouthChinaSea3/runoff/"
+# Download the hpc.xmu build_option file "xmu_hpc_mpi_1" to the folder "~/SouthChinaSea3/code/"
+#-------------------------------------------------------
 
 # Compile MITgcm
 cd ~/SouthChinaSea3/MITgcm
 mkdir build run
-
-# 
 cd ~/SouthChinaSea3/MITgcm/build
 ../tools/genmake2 -of ../../code/xmu_hpc_mpi_1 -mpi -mods ../../code 
 make depend
 make -j 16
 
+# Run MITgcm
 cd ~/SouthChinaSea3/MITgcm/run
 cp ../build/mitgcmuv .
 ln -sf ~/SouthChinaSea3/ECMWF_operational/* .
@@ -30,3 +35,7 @@ ln -sf ../../run_template/* .
 cp ../../input/* .
 
 bsub -n 240 -q ocean_530 -o %J.out mpirun ./mitgcmuv
+
+# Monitor cfl condition during run
+ cd /nobackup/$USER/NA/MITgcm/run
+ tail -f STDOUT.0000 | grep advcfl_W
